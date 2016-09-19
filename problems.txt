@@ -1,0 +1,19 @@
+/******************************************************************************
+* FILE: problems.txt
+* DESCRIPTION:
+*   A program that demonstrates how threads can handle time-keeping
+* 
+* AUTHORS: Stephen Kerr       
+*          Szymon Zielinski   
+* LAST REVISED: 09/12/2011
+******************************************************************************/
+
+A race condition has arisen when it came to cleaning up after the alarm threads
+(the numerous threads that are put on the linked list). The problem revolved 
+around the fact that you cannot send a cancellation request to a thread, and 
+call pthread_join() on it while holding the mutex. To solve it, the sigWaiter 
+thread was changed with some of the responsibility for cleaning up after those 
+threads being shifted over to the main, which does not have any mutexes 
+associated with it. As things stand, sigWaiter only sends a cancellation 
+request, while the main calls pthread_join() and frees the memory off of the 
+linked list.

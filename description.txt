@@ -1,0 +1,55 @@
+/******************************************************************************
+* FILE: description.txt
+* DESCRIPTION:
+*   A program that demonstrates how threads can handle time-keeping
+* 
+* AUTHORS: Stephen Kerr       
+*          Szymon Zielinski   
+* LAST REVISED: 09/12/2011
+******************************************************************************/
+
+This program is made up of three main threads:
+1.	A thread that creates random wake up calls every second.
+2.	A thread that cleans up after wake up calls have expired and have been
+	handled
+3.	A thread that waits for and handles user input - ctrl-c (SIGINT)
+
+The program uses a global mutex and a global condition variable, which are used 
+to protect a linked list of pthreads and global control and counter variables.
+
+Thread 1 creates random wake up calls. It initiates a data structure to hold all 
+of the wake up call information in one place (a linked list), reserves memory 
+for it and whenever it generates a wake-up call, it puts its data at the front 
+of that list. It also creates and starts a new thread for each wake up call.
+This thread runs every second, meaning that it creates a new random wake-up call
+every second.
+
+The wake up calls are handled by threads - each created wake up call has a 
+dedicated thread associated with it. These threads use pthread_cond_timedwait to
+wait until a specified time hits (the time is randomly generated) before 
+acting on the alarm. Each thread created this way is put on a linked list, 
+where it stays until it is removed by the cleaner thread.
+
+Thread 2 is initiated at start-up and is one of the last threads to 
+close when the program closes. It looks over the linked list to find threads 
+that have expired, it removes them from the linked list, calls pthread_join() on
+them and frees the memory associated with their node on the linked list. Every 
+time the thread is finished looking over the linked list, it suspends itself 
+for 30 seconds and lets other threads do their work.
+
+Thread 3 waits for a SIGINT, and when it receives it, it sends a cancellation 
+request to all threads that are on the linked list, and notifies the main that
+a SIGINT has been received using SIGUSR2.
+
+The main starts up the three main threads discussed previously, and waits for
+a SIGUSR2 from the cleaner thread. Upon receiving SIGUSR2, it waits for the
+threads on the linked list to react to the cancellation request by calling
+pthread_join() on each one of them (by doing that it also cleans up after the 
+threads) and then proceeds to free their memory from the system. It also sends
+a cancellation request and calls pthread_join() on the three main threads. It
+then proceeds to destroy the mutex and the condition variable.
+
+The reason behind fully cleaning up after all of the threads and mutexes right 
+before the program closes (apart from good practice) is to demonstrate that 
+the cleanup handlers, cancellation points and the linked list work properly 
+together without causing race conditions.
