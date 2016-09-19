@@ -1,0 +1,13 @@
+The program uses packages. To compile, go into the relevant source folder and compile with:
+
+"javac parkinglot.FairParkingLot.java"
+and
+"javac parkinglot.UnfairParkingLot.java"
+
+
+
+Run with:
+
+"java parkinglot.FairParkingLot"
+and
+"java parkinglot.UnfairParkingLot"
