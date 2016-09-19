@@ -1,0 +1,20 @@
+*******************************************************************************
+* FILE: problems.txt
+* DESCRIPTION:
+*   A file that provides an explanation of shortcomings and weaknesses in 
+*   assignment01.c.
+* AUTHORS: Stephen Kerr       
+*          Szymon Zielinski   
+* LAST REVISED: 05/10/2011
+*******************************************************************************
+
+The program uses a cleanup handler to print a message. The problem with this is
+that cleanup handlers are meant to be used to free up the resources that a 
+thread holds at the time it terminates, e.g. a mutex. Its usage in this program
+varies slightly from the usual usage, but it was the only way that we could 
+think of to print a message when a deferred cancelation request comes in. 
+
+Errors that may result from the usage of sigwait and pthred_kill are not handled
+(when the functions return something other than 0). These errors never occurred
+during the process of testing, and additionally they were not covered in CA321,
+so they were omitted from this assignment.

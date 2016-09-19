@@ -1,0 +1,52 @@
+*******************************************************************************
+* FILE: description.txt
+* DESCRIPTION:
+*   A file that provides a description of how assignment01.c works.
+* AUTHORS: Stephen Kerr       
+*          Szymon Zielinski   
+* LAST REVISED: 05/10/2011
+*******************************************************************************
+
+The program is made up of two threads and the main. It uses signals to establish
+communication between them.
+
+The two child threads do the following:
+1. Prints odd numbers starting at 1 when the main sends it a signal - 1 signal 
+    from the main results in 1 number.
+2. Prints even numbers starting at 2 when the main sends it a signal - 1 signal 
+    from the main results in 1 number.
+    
+The program's threads should cooperate and be able to print a sequence of 
+numbers, e.g. (1,2,3,4,...,10). 
+    
+The program uses SIGUSR1 and SIGUSR2 to establish communication between the main
+and the two threads - the two number-printing threads react and wait for SIGURS1
+, while the main handles SIGUSR2.
+
+To establish order and proper communication the following sequence of events is 
+applied: 
+1. The two number-printing threads call sigwait, and are now waiting for SIGUSR1
+2. The main sends a SIGUSR1 to the odd-number-printing-thread. 
+3. The main calls sigwait, and is now waiting for SIGUSR2.
+4. The odd thread receives the signal, exits sigwait and is allowed to carry out
+     its tasks.
+5. The odd thread signals the parent process using SIGUSR2 and loops back into 
+     its sigwait.
+6. The main receives SIGUSR2, and it signals the even thread with SIGUSR1.
+7. The even thread receives the signal, exits sigwait and is allowed to carry 
+     out its tasks.
+8. The even thread signals the parent process using SIGUSR2 and loops back into 
+     its sigwait.
+9. The whole process repeats.
+
+The main checks if the number limit has been reached, and if it has, it sends a
+cancelation request to the two threads using pthread_cancel.
+
+The "struct thread_data" was introduced into the program to allow for passing 
+more than one argument to a thread. 
+
+"static void sayGoodbye(void *param)" is a clean-up handler that prints 
+a custom message to the screen when the thread is sent a cancelation request. 
+Note that it doesn't do any actual cleaning up.
+
+Problems and shortcomings are listed in the "problems.txt" file.
